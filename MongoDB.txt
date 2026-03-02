@@ -1,0 +1,194 @@
+USUARIOS
+db.usuarios.insertMany([
+  {
+    nombre: "Miguel",
+    email: "miguel@gmail.com",
+    edad: 18,
+    pais: "Colombia",
+    historial_vistos: ["La Cabaña", "Planeta Desconocido"],
+    fecha_registro: new Date()
+  },
+  {
+    nombre: "Maria Jose",
+    email: "maria@gmail.com",
+    edad: 22,
+    pais: "Mexico",
+    historial_vistos: ["Leonidas", "Amor en Paris"],
+    fecha_registro: new Date()
+  },
+  {
+    nombre: "Juan Felipe",
+    email: "juan@gmail.com",
+    edad: 25,
+    pais: "Argentina",
+    historial_vistos: ["Planeta Desconocido"],
+    fecha_registro: new Date()
+  }
+])
+
+CONTENIDOS
+db.contenidos.insertMany([
+  {
+    titulo: "La Cabaña",
+    tipo: "pelicula",
+    genero: "Terror",
+    duracion_min: 130,
+    anio: 2023,
+    calificacion_promedio: 4.8
+  },
+  {
+    titulo: "Leonidas",
+    tipo: "pelicula",
+    genero: "Accion",
+    duracion_min: 115,
+    anio: 2022,
+    calificacion_promedio: 4.2
+  },
+  {
+    titulo: "Planeta Desconocido",
+    tipo: "serie",
+    genero: "Ciencia Ficcion",
+    duracion_min: 45,
+    temporadas: 3,
+    anio: 2024,
+    calificacion_promedio: 4.9
+  },
+  {
+    titulo: "Amor en Paris",
+    tipo: "pelicula",
+    genero: "Romance",
+    duracion_min: 95,
+    anio: 2021,
+    calificacion_promedio: 4.0
+  }
+])
+
+VALORACIONES
+db.valoraciones.insertMany([
+  {
+    usuario: "Miguel",
+    contenido: "La Cabaña",
+    puntuacion: 5,
+    comentario: "Muy buena pelicula de terror",
+    fecha: new Date("2025-03-01")
+  },
+  {
+    usuario: "Maria Jose",
+    contenido: "Leonidas",
+    puntuacion: 4,
+    comentario: "Interesante historia",
+    fecha: new Date("2025-03-02")
+  },
+  {
+    usuario: "Juan Felipe",
+    contenido: "Planeta Desconocido",
+    puntuacion: 5,
+    comentario: "Excelente serie de ciencia ficcion",
+    fecha: new Date("2025-03-03")
+  }
+])
+
+LISTAS
+db.listas.insertMany([
+  {
+    usuario: "Miguel",
+    nombre_lista: "Favoritas",
+    contenidos: ["La Cabaña", "Planeta Desconocido"],
+    fecha_creacion: new Date()
+  },
+  {
+    usuario: "Maria Jose",
+    nombre_lista: "Para Ver Despues",
+    contenidos: ["Amor en Paris", "Leonidas"],
+    fecha_creacion: new Date()
+  },
+  {
+    usuario: "Juan Felipe",
+    nombre_lista: "Pendientes",
+    contenidos: ["La Cabaña"],
+    fecha_creacion: new Date()
+  }
+])
+
+CONSULTAS
+db.contenidos.find({ duracion_min: { $gt: 120 } })
+
+db.contenidos.find({ duracion_min: { $lt: 60 } })
+
+db.contenidos.find({ genero: { $eq: "Terror" } })
+
+db.contenidos.find({
+  genero: { $in: ["Terror", "Romance"] }
+})
+
+db.contenidos.find({
+  $and: [
+    { tipo: "pelicula" },
+    { duracion_min: { $gt: 100 } }
+  ]
+})
+
+db.usuarios.find({
+  $or: [
+    { pais: "Colombia" },
+    { pais: "Mexico" }
+  ]
+})
+
+db.usuarios.find({
+  nombre: { $regex: "^M" }
+})
+
+db.contenidos.find({ tipo: "pelicula" })
+
+db.contenidos.find({ genero: "Terror" })
+
+db.usuarios.find({ nombre: { $regex: "^M" } })
+
+UpdateOne
+db.contenidos.updateOne(
+  { titulo: "La Cabaña" },
+  { $set: { calificacion_promedio: 4.9 } }
+)
+
+UpdateMany
+db.usuarios.updateMany(
+  { pais: "Mexico" },
+  { $set: { pais: "México" } }
+)
+
+DeleteOne
+db.valoraciones.deleteOne({
+  usuario: "Juan Felipe"
+})
+
+AGREGACIÓN 1
+db.contenidos.aggregate([
+  { $match: { duracion_min: { $gt: 40 } } },
+  {
+    $group: {
+      _id: "$tipo",
+      promedio_duracion: { $avg: "$duracion_min" }
+    }
+  },
+  { $sort: { promedio_duracion: -1 } },
+  {
+    $project: {
+      tipo: "$_id",
+      promedio_duracion: 1,
+      _id: 0
+    }
+  }
+])
+
+AGREGACIÓN 2
+db.listas.aggregate([
+  { $unwind: "$contenidos" },
+  {
+    $group: {
+      _id: "$usuario",
+      total_contenidos: { $sum: 1 }
+    }
+  },
+  { $sort: { total_contenidos: -1 } }
+])
